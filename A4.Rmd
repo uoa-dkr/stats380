@@ -1,0 +1,142 @@
+---
+title: "A4"
+author: "Kerui Du"
+date: "08/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+(oceania = unlist(strsplit(readLines("oceania.txt"), ",")))
+```
+
+# Q1
+```{r 1}
+fun1 <- function(country) {
+  country = tolower(gsub(' ','-',country))
+  sprintf('%s-population.html',country)
+}
+Population=unlist(lapply(oceania, fun1));Population
+writeLines(Population,'Population.html')
+writeLines(Population,'Population')
+
+```
+
+
+# Q2
+```{r 2}
+url = "https://www.worldometers.info/world-population/"
+tableInfo <- function(input) {
+  file = readLines(input,warn=F)
+  pattern = grep('<table',file)
+  
+  # extract the indexes of interest(start) from each pattern
+  tableStart_list = sapply(pattern, function(i) gregexpr('<table',file[i]))
+  tableStart = unlist(tableStart_list) # convert list to vector
+  
+  # find length of each pattern(because some patterns have multiple indexes)
+  lens=sapply(tableStart_list, length) 
+  lineNumber = rep(pattern,lens)  # extract correct number of pattern
+  
+  # extract the indexes of interest(end) for each pattern
+  tableEnd = unlist(sapply(pattern, function(i) gregexpr('/table>',file[i])))
+  cbind(lineNumber,tableStart,tableEnd) # bind them to a matrix
+}
+tableInfo(paste0(url,'new-zealand-population'))
+tableInfo(paste0(url,'cook-islands-population'))
+
+
+```
+
+
+# Q3
+```{r 3}
+readCountryTable <- function(countryName,tableName) {
+  web = sub('.html','',paste0(url,fun1(countryName))) # gain a website
+  file = readLines(web,warn = F)
+  line = tableInfo(web)[tableName]   # obtain index from previous function
+  
+  col_name = cols(file[line])        # get column names
+  value = rows(file[line],tableName) # get value of each column by its 'tableName'
+  
+  # convert all character to numeric and transpose matrix to a dataframe
+  df=as.data.frame(apply(value,2,as.numeric))  
+  colnames(df)=col_name
+  df
+}
+
+# column function: extract all column names
+cols <- function(line) {               
+  info = strsplit(line,'thead')[[1]][2]
+  sub_info = unlist(strsplit(info,'<th>')[[1]][-1])
+  sub_info = gsub('</.+$','',sub_info)
+  gsub(' <br> |<br> |<br>',' ',sub_info)
+}
+
+# value function: extract all values
+rows <- function(line,tableName) {
+  if (tableName==2) {
+    info=strsplit(line,'<tr> <td>')[[1]][2:19]
+    sub_info=strsplit(info,'</td>')
+  }
+  
+  else {
+    info=strsplit(line,'<tr> <td>')[[1]][20:26]
+    sub_info=strsplit(info,'</td>')
+  }
+    
+  m=do.call(rbind,sub_info)
+  m=gsub(',| %|</.+$','',m[,-ncol(m)])
+  m=gsub('| <.+>|<.+>','',m)
+  ifelse(m=='N.A.', NA, m)
+}
+
+head(NZTable2 <- readCountryTable("French Polynesia", 2), 3)
+head(CITable3 <- readCountryTable("Cook Islands", 3), 3)
+
+
+```
+
+# Q4
+```{r 4}
+# get a list that contains second dataframe of 20 countries from previous function
+df = lapply(oceania, readCountryTable, 2)
+
+# sublist(1-3) the list from last step
+mod_df = lapply(1:length(oceania), function(i) cbind(Country=oceania[i],df[[i]][1:3]))
+
+# convert list to dataframe named f_df(for next question)
+f_df = do.call(rbind,mod_df)
+head(f_df);tail(f_df)
+```
+
+
+# Q5
+```{r 5}
+# find the each 10-year 
+sub_df = f_df[f_df$Year %% 10 == 0,]
+
+# use tapply to get a contingency table
+final_df=(with(sub_df,tapply(`Yearly % Change`, list(Country,as.factor(Year)), mean)))
+
+# convert to dataframe
+final_df = as.data.frame(final_df)
+
+# modification
+final_df=cbind(Country=rownames(final_df),final_df)
+rownames(final_df)=1:nrow(final_df);final_df
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

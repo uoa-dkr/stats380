@@ -1,0 +1,92 @@
+---
+title: "test"
+author: "Kerui Du"      
+UPI: '384949502'
+date: "23/08/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Q1
+```{r 1a}
+x =  3 : 10
+
+# (ai)
+cumsum(x)
+
+# (aii)
+ifelse(x<7, 6, x)
+
+# (aiii)
+ifelse(abs(5.5-x)>2, TRUE, FALSE)
+
+# (aiv)
+x[ifelse(abs(7-x)<2, TRUE, FALSE)]
+
+```
+
+```{r 1b}
+y = c("EGO", "STOOD", "GLUE", "CHECK")
+
+# (bi)
+paste(substring(y, c(2,4), c(3,5)),collapse = '')
+
+# (bii)
+rep(paste(y, ':-)', sep = ''),2)
+
+# (biii)
+names(y) = 1:4;y
+```
+
+## Q2
+```{r 2a}
+nth.na <- function(x, n) {
+  len = length(x[is.na(x)])
+  if (len >= n){
+    return(which(is.na(x))[n])
+  }
+  else{
+    return(NA)}
+}
+nth.na(c(NA, 0, NA, 7, 9, NA), 2)
+nth.na(c(1, NA, 0, NA, 7, 9, NA), 2)
+nth.na(c(1, NA, 0, NA, 7, 9, NA), 5)
+```
+
+```{r 2b}
+nth.na.element <- function(x, n) {
+  len = length(x[is.na(x)])
+  if (len >= n){
+    return(x[which(is.na(x))[n]+1])
+  }
+  else
+    return(NA)
+}
+nth.na.element(c(1, NA, 0, NA, 7, 9, NA), 1)
+nth.na.element(c(1, NA, 0, NA, 7, 9, NA), 2)
+nth.na.element(c(1, NA, 0, NA, 7, 9, NA), 3)
+nth.na.element(c(1, NA, 0, NA, 7, 9, NA), 5)
+nth.na.element(c(1, NA, 0, NA, NA, 9, NA), 2)
+```
+
+# Q3
+```{r 3a}
+fun <- function(x, y) {
+  m = outer(x, y, '+')
+  ifelse(m%%2==0, 0, 1)
+}
+A = fun (1:3 , 1:5)
+A
+
+A = fun (1:3 , 0:7)
+A
+
+A = fun (2:3 , 7:5)
+A
+```
+
+
+
